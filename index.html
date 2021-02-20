@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <style>
+    .result:hover {
+      color: blue;
+    }
+
+    .result {
+      color: black;
+    }
+  </style>
+
+  <script>
+
+    function changeColor(iteration) {
+
+      // Partial dividend
+      if (iteration == 0) {
+        setColor(document.getElementById("part-div"), "green");
+      } else {
+        setColor(document.getElementById(iteration - 1 + "-rem"), "blue");
+        setColor(document.getElementById(iteration - 1 + "-borrow"), "green");
+      }
+      // Part number
+      setColor(document.getElementById(iteration + "-part-num"), "blue");
+      // Remainder
+      setColor(document.getElementById(iteration + "-rem"), "orchid");
+    }
+
+    function setColor(element, color) {
+
+      if (element.childElementCount > 0) {
+        nodeList = element.childNodes;
+        for (i=0; i < nodeList; i++) {
+          nodeList[i].style.color = color;
+        }
+      } else {
+        element.style.color = color;
+      }
+    }
+
+    function setDefaultColor(iteration) {
+
+      if (iteration == 0) {
+        setColor(document.getElementById("part-div"), "black");
+      } else {
+        setColor(document.getElementById(iteration - 1 + "-rem"), "black");
+        setColor(document.getElementById(iteration - 1 + "-borrow"), "black");
+      }
+      // Part number
+      setColor(document.getElementById(iteration + "-part-num"), "black");
+      // Remainder
+      setColor(document.getElementById(iteration + "-rem"), "black");
+    }
+
+  </script>
+
+</head>
+
+<body>
+
+  <label for="dividend">Dividend</label>
+  <input id="dividend" type="text" value="432"/>
+  <label for="divisor">Divisor</label>
+  <input id="divisor" type="text" value="22"/>
+  <button onclick="division('dividend', 'divisor', 'result')">Update</button>
+
+  <!-- Long division -->
+  <pre id="result">
+  </pre>
+
+  <script src="division.js"></script>
+
+</script>
+</body>
+</html>
