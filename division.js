@@ -24,6 +24,8 @@ function isLongGreaterOrEqual(remainder, divisor) {
   for (let i = 0; i < remainder.length; i++) {
     if (parseInt(remainder[i]) < parseInt(divisor[i])) {
       return false
+    } else if (parseInt(remainder[i]) > parseInt(divisor[i])) {
+      return true
     }
   }
   return true;
@@ -63,18 +65,23 @@ function longSubtract(value, subtraction) {
 
 function longDivision(dividendValue, divisorValue) {
   const dividend = dividendValue.split('')
-  const divisor = dividendValue.split('')
+  const divisor = divisorValue.split('')
   let resultDigits = ''
   let order = 0
   let partialDividends = []
   let remainders = []
   let subtractions = []
-  let remainder
-  let subtraction = ''
+  let remainder = []
+  let subtraction = ['0']
 
   do {
     // get sufficient amount of digits that grater or equal to divisor
-    remainder = subtraction
+    if (subtraction.length > 1 || subtraction[0] !== '0') {
+      remainder = subtraction
+    } else {
+      remainder = []
+    }
+
     let i
     for (i = order; i < dividend.length; i++) {
       remainder = remainder.concat(dividend[i])
@@ -87,15 +94,15 @@ function longDivision(dividendValue, divisorValue) {
     order = i + 1
 
     // if last remainder too small than exit loop
-    if (order >= dividend.length) {
+    if (order > dividend.length) {
       subtraction = remainder
       break
     }
 
-    remainders = remainders.concat(remainder)
+    remainders = remainders.concat(remainder.join(''))
 
     // define result digit
-    let partialDividend = ''
+    let partialDividend = []
     let digit = ''
     for (let nextDigit = 1; nextDigit <= 9; nextDigit++) {
       const nextPartialDividend = longMultiply(divisor, nextDigit)
@@ -108,18 +115,18 @@ function longDivision(dividendValue, divisorValue) {
     }
 
     subtraction = longSubtract(remainder, partialDividend)
-    subtractions = subtractions.concat(subtraction)
-    partialDividends = partialDividends.concat(partialDividend)
+    subtractions = subtractions.concat(subtraction.join(''))
+    partialDividends = partialDividends.concat(partialDividend.join(''))
     resultDigits = resultDigits.concat(digit)
 
   } while (order < dividend.length)
 
-  remainders = remainders.concat(subtraction)
+  remainders = remainders.concat(subtraction.join(''))
 
   return {
     dividend: dividendValue,
     divisor: divisorValue,
-    result: '',
+    result: resultDigits,
     partialDividends: partialDividends,
     remainders: remainders,
     subtractions: subtractions
@@ -131,8 +138,8 @@ function division(idDividend, idDivisor, idResultArea) {
   const divisor = document.getElementById(idDivisor).value
 
   // const res = longMultiply(['2', '5'], 4)
-  // const res = isLongGreaterOrEqual(['2', '5'], ['2', '4'])
-  const res = longSubtract(['2', '5'], ['1', '6'])
+  const res = isLongGreaterOrEqual(['2', '1', '2'], ['1', '3', '2'])
+  // const res = longSubtract(['2', '5'], ['1', '6'])
   const divisionResult = longDivision(dividend, divisor)
 
   let result = `
