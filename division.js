@@ -1,6 +1,139 @@
+function longMultiply(divisor, digit) {
+  let result = []
+  let additionToNextSegment = 0
+  for (let i = divisor.length - 1; i >= 0; i--) {
+    const segment = parseInt(divisor[i]) * digit + additionToNextSegment
+    result = result.concat((segment % 10).toString())
+    additionToNextSegment = Math.trunc(segment / 10)
+  }
+
+  if (additionToNextSegment > 0) {
+    result = result.concat(additionToNextSegment.toString())
+  }
+
+  return result.reverse()
+}
+
+function isLongGreaterOrEqual(remainder, divisor) {
+  if (remainder.length > divisor.length) {
+    return true;
+  }
+  if (remainder.length < divisor.length) {
+    return false;
+  }
+  for (let i = 0; i < remainder.length; i++) {
+    if (parseInt(remainder[i]) < parseInt(divisor[i])) {
+      return false
+    }
+  }
+  return true;
+}
+
+function longSubtract(value, subtraction) {
+  let subtractionFromNextSegment = 0
+  let result = []
+
+  for (let i = 0; i < value.length; i++) {
+    let segment
+    if (subtraction.length - 1 - i >= 0) {
+      segment = parseInt(value[value.length - 1 - i]) - parseInt(subtraction[subtraction.length - 1 - i]) - subtractionFromNextSegment
+    } else {
+      segment = parseInt(value[value.length - 1 - i]) - subtractionFromNextSegment
+    }
+    if (segment < 0) {
+      subtractionFromNextSegment = 1
+      result = result.concat((segment + 10).toString())
+    } else {
+      result = result.concat((segment).toString())
+    }
+
+  }
+  result = result.reverse()
+  let nonZeroOrder
+  for (nonZeroOrder = 0; nonZeroOrder < result.length; nonZeroOrder++) {
+    if (parseInt(result[nonZeroOrder]) != 0) {
+      break;
+    }
+  }
+  if (nonZeroOrder >= result.length) {
+    return ['0']
+  }
+  return result.slice(nonZeroOrder, result.length)
+}
+
+function longDivision(dividendValue, divisorValue) {
+  const dividend = dividendValue.split('')
+  const divisor = dividendValue.split('')
+  let resultDigits = ''
+  let order = 0
+  let partialDividends = []
+  let remainders = []
+  let subtractions = []
+  let remainder
+  let subtraction = ''
+
+  do {
+    // get sufficient amount of digits that grater or equal to divisor
+    remainder = subtraction
+    let i
+    for (i = order; i < dividend.length; i++) {
+      remainder = remainder.concat(dividend[i])
+      if (isLongGreaterOrEqual(remainder, divisor)) {
+        break;
+      } else if (resultDigits.length > 0) {
+        resultDigits.concat('0')
+      }
+    }
+    order = i + 1
+
+    // if last remainder too small than exit loop
+    if (order >= dividend.length) {
+      subtraction = remainder
+      break
+    }
+
+    remainders = remainders.concat(remainder)
+
+    // define result digit
+    let partialDividend = ''
+    let digit = ''
+    for (let nextDigit = 1; nextDigit <= 9; nextDigit++) {
+      const nextPartialDividend = longMultiply(divisor, nextDigit)
+      if (isLongGreaterOrEqual(remainder, nextPartialDividend)) {
+        partialDividend = nextPartialDividend
+        digit = nextDigit
+      } else {
+        break
+      }
+    }
+
+    subtraction = longSubtract(remainder, partialDividend)
+    subtractions = subtractions.concat(subtraction)
+    partialDividends = partialDividends.concat(partialDividend)
+    resultDigits = resultDigits.concat(digit)
+
+  } while (order < dividend.length)
+
+  remainders = remainders.concat(subtraction)
+
+  return {
+    dividend: dividendValue,
+    divisor: divisorValue,
+    result: '',
+    partialDividends: partialDividends,
+    remainders: remainders,
+    subtractions: subtractions
+  }
+}
+
 function division(idDividend, idDivisor, idResultArea) {
-  const dividend = document.getElementById(idDividend).text
-  const divisor = document.getElementById(idDividend).text
+  const dividend = document.getElementById(idDividend).value
+  const divisor = document.getElementById(idDivisor).value
+
+  // const res = longMultiply(['2', '5'], 4)
+  // const res = isLongGreaterOrEqual(['2', '5'], ['2', '4'])
+  const res = longSubtract(['2', '5'], ['1', '6'])
+  const divisionResult = longDivision(dividend, divisor)
 
   let result = `
 _<span id="part-div">43</span>2|22
