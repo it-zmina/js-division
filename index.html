@@ -30,7 +30,9 @@
     }
 
     function setColor(element, color) {
-
+      if (!element) {
+        return
+      }
       if (element.childElementCount > 0) {
         nodeList = element.childNodes;
         for (i=0; i < nodeList; i++) {

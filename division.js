@@ -14,17 +14,21 @@ function longMultiply(divisor, digit) {
   return result.reverse()
 }
 
-function isLongGreaterOrEqual(remainder, divisor) {
-  if (remainder.length > divisor.length) {
+function isLongGreaterOrEqual(firstValue, secondValue) {
+
+  const first = trimLeadingZeros(firstValue)
+  const second = trimLeadingZeros(secondValue)
+
+  if (first.length > second.length) {
     return true;
   }
-  if (remainder.length < divisor.length) {
+  if (first.length < second.length) {
     return false;
   }
-  for (let i = 0; i < remainder.length; i++) {
-    if (parseInt(remainder[i]) < parseInt(divisor[i])) {
+  for (let i = 0; i < firstValue.length; i++) {
+    if (parseInt(first[i]) < parseInt(second[i])) {
       return false
-    } else if (parseInt(remainder[i]) > parseInt(divisor[i])) {
+    } else if (parseInt(first[i]) > parseInt(second[i])) {
       return true
     }
   }
@@ -48,19 +52,19 @@ function longSubtract(value, subtraction) {
     } else {
       result = result.concat((segment).toString())
     }
-
   }
-  result = result.reverse()
+
+  return trimLeadingZeros(result.reverse())
+}
+
+function trimLeadingZeros(digits) {
   let nonZeroOrder
-  for (nonZeroOrder = 0; nonZeroOrder < result.length; nonZeroOrder++) {
-    if (parseInt(result[nonZeroOrder]) != 0) {
+  for (nonZeroOrder = 0; nonZeroOrder < digits.length - 1; nonZeroOrder++) {
+    if (digits[nonZeroOrder] !== '0') {
       break;
     }
   }
-  if (nonZeroOrder >= result.length) {
-    return ['0']
-  }
-  return result.slice(nonZeroOrder, result.length)
+  return digits.slice(nonZeroOrder)
 }
 
 function longDivision(dividendValue, divisorValue) {
@@ -73,6 +77,7 @@ function longDivision(dividendValue, divisorValue) {
   let subtractions = []
   let remainder = []
   let subtraction = ['0']
+  let orders = []
 
   do {
     // get sufficient amount of digits that grater or equal to divisor
@@ -88,18 +93,18 @@ function longDivision(dividendValue, divisorValue) {
       if (isLongGreaterOrEqual(remainder, divisor)) {
         break;
       } else if (resultDigits.length > 0) {
-        resultDigits.concat('0')
+        resultDigits = resultDigits.concat('0')
       }
     }
     order = i + 1
-
+    orders = orders.concat(Math.min(order, dividend.length))
     // if last remainder too small than exit loop
     if (order > dividend.length) {
       subtraction = remainder
       break
     }
 
-    remainders = remainders.concat(remainder.join(''))
+    remainders = remainders.concat(trimLeadingZeros(remainder).join(''))
 
     // define result digit
     let partialDividend = []
@@ -129,18 +134,80 @@ function longDivision(dividendValue, divisorValue) {
     result: resultDigits,
     partialDividends: partialDividends,
     remainders: remainders,
-    subtractions: subtractions
+    subtractions: subtractions,
+    orders: orders
   }
+}
+
+function formatter(divisionResult) {
+  const dividend = divisionResult.dividend
+  const divisor = divisionResult.divisor
+  const result = divisionResult.result
+  const remainders = divisionResult.remainders
+  const subtractions = divisionResult.subtractions
+  const orders = divisionResult.orders
+
+  // First row
+  let remainder = divisionResult.remainders[0]
+  let text = `_<span id="part-div">${remainder}</span>`
+  text += `${divisionResult.dividend.substr(remainder.length)}|${divisionResult.divisor}`
+  text += '\n'
+
+  // Second row
+  let partialDividend = divisionResult.partialDividends[0]
+  text += ` ${" ".repeat(remainder.length - partialDividend.length)}`
+  text += `<span id="0-part-num">${partialDividend}</span>`
+  text += `${" ".repeat(dividend.length - remainder.length)}`
+  text += `|${"-".repeat(Math.max(divisor.length, result.length))}`
+  text += '\n'
+
+  // Third row
+  text += ` ${"-".repeat(remainder.length)}${" ".repeat(dividend.length - remainder.length)}|`
+  for (let i = 0; i < result.length; i++) {
+    text += `<span class="result" onmouseover="changeColor(${i})" onmouseout="setDefaultColor(${i})">${result.charAt(i)}</span>`
+  }
+  text += `\n`
+
+  // Fourth row
+  let leftIndent = 1 + remainders[0].length - subtractions[0].length
+  text += " ".repeat(leftIndent - 1)
+  text += remainders.length > 2 ? '_' : ' '
+  const nextRemainder = subtractions[0] === '0' && remainders.length > 2 ? '0' + remainders[1] : remainders[1]
+  text += `<span id="0-rem">${subtractions[0]}</span>`
+
+  let digitIndex = 0
+
+  for (let i = 0; digitIndex < orders[1] - orders[0] - remainders[1].length; i++) {
+    text += `<span id="${digitIndex}-borrow">0</span>`
+    digitIndex++
+  }
+  let remainderDigits = nextRemainder.substr(subtractions[0].length).split('')
+  for (let i = 0; i < remainderDigits.length; i++) {
+    text += `<span id="${digitIndex}-borrow">${remainderDigits[i]}</span>`
+    digitIndex++
+  }
+  text += `\n`
+
+  // loop for other subtractions
+  for (let k = 0; k < subtractions.length; k++) {
+    // TODO implement
+  }
+
+  return text
 }
 
 function division(idDividend, idDivisor, idResultArea) {
   const dividend = document.getElementById(idDividend).value
   const divisor = document.getElementById(idDivisor).value
+  // const dividend = '4325'
+  // const divisor = '3'
 
   // const res = longMultiply(['2', '5'], 4)
-  const res = isLongGreaterOrEqual(['2', '1', '2'], ['1', '3', '2'])
+  // const res = isLongGreaterOrEqual(['2', '1', '2'], ['1', '3', '2'])
   // const res = longSubtract(['2', '5'], ['1', '6'])
   const divisionResult = longDivision(dividend, divisor)
+
+  const formattedLongDivision = formatter(divisionResult)
 
   let result = `
 _<span id="part-div">43</span>2|22
@@ -151,5 +218,6 @@ _<span id="0-rem">21</span><span id="0-borrow">2</span>
  ---
   <span id="1-rem">14</span><span id="1-borrow"></span>
   `
-  document.getElementById(idResultArea).innerHTML = result
+  // document.getElementById(idResultArea).innerHTML = result
+  document.getElementById(idResultArea).innerHTML = formattedLongDivision
 }
