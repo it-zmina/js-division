@@ -46,6 +46,7 @@ function longSubtract(value, subtraction) {
     } else {
       segment = parseInt(value[value.length - 1 - i]) - subtractionFromNextSegment
     }
+    subtractionFromNextSegment = 0
     if (segment < 0) {
       subtractionFromNextSegment = 1
       result = result.concat((segment + 10).toString())
@@ -236,7 +237,7 @@ function division(idDividend, idDivisor, idResultArea) {
 
   // const res = longMultiply(['2', '5'], 4)
   // const res = isLongGreaterOrEqual(['2', '1', '2'], ['1', '3', '2'])
-  // const res = longSubtract(['2', '5'], ['1', '6'])
+//   const res = longSubtract(['1', '6', '2'], ['1', '5', '4'])
   const divisionResult = longDivision(dividend, divisor)
 
   const formattedLongDivision = formatter(divisionResult)
