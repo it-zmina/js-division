@@ -189,8 +189,40 @@ function formatter(divisionResult) {
   text += `\n`
 
   // loop for other subtractions
-  for (let k = 0; k < subtractions.length; k++) {
-    // TODO implement
+  for (let k = 1; k < subtractions.length; k++) {
+    let partialDividend = divisionResult.partialDividends[k]
+    remainder = remainders[k]
+    let effectiveRemainder = subtractions[k - 1] === '0' ?
+        '0'.repeat(1 + orders[k] - orders[k - 1] - remainder.length) + remainder :
+        remainder
+    let subtraction = subtractions[k]
+
+    // Partial dividend
+    text += `${" ".repeat(leftIndent + effectiveRemainder.length - partialDividend.length)}`
+    text += `<span id="${digitIndex}-part-num">${partialDividend}</span>`
+    text += `\n`
+
+    // Split line
+    text += `${" ".repeat(leftIndent)}${"-".repeat(effectiveRemainder.length)}`
+    text += `\n`
+
+    // Remainder
+    const nextRemainder = subtraction === '0' && remainders.length > k + 2 ? '0' + remainders[k + 1] : remainders[k + 1]
+    leftIndent += effectiveRemainder.length - subtraction.length
+    text += `${" ".repeat(leftIndent - 1)}`
+    text += remainders.length > k + 2 ? '_' : ' '
+    text += `<span id="${digitIndex}-rem">${subtraction}</span>`
+
+    for (; digitIndex <= orders[k] - orders[k - 1] - remainders[k].length; digitIndex++) {
+      text += `<span id="${digitIndex}-borrow">0</span>`
+    }
+
+    let remainderDigits = nextRemainder.substr(subtraction.length).split('')
+    for (let i = 0; i < remainderDigits.length; i++) {
+      text += `<span id="${digitIndex}-borrow">${remainderDigits[i]}</span>`
+      digitIndex++
+    }
+    text += `\n`
   }
 
   return text
